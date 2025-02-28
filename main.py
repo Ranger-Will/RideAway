@@ -27,7 +27,6 @@ class Game:
           pygame.quit()
           sys.exit()
 
-
       pygame.display.update()
       self.clock.tick = 60
     
