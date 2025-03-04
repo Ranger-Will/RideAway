@@ -1,5 +1,11 @@
 import pygame
 
+difficulty = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              2, 2, 2, 2, 2, 2, 2, 2,
+              3, 3, 3, 3, 3, 3, 3, 3,
+              4, 4, 4, 4, 4, 4,
+              5]
+
 
 class PhysicsEntity:
     def __init__(self, game, e_type, pos, size, max_health):
@@ -50,13 +56,14 @@ class PhysicsEntity:
         surf.blit(self.game.assets['bike'], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
 
 class GravatyEntity:
-    def __init__(self, game, e_type, pos, size, level):
+    def __init__(self, game, e_type, pos, size, level,grav=0):
         self.game = game
         self.type = e_type
         self.pos = list(pos)
         self.size = size
         self.velocity = [0, 0]
         self.level = level
+        self.grav = grav
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
 
     def rect(self):
@@ -90,8 +97,10 @@ class GravatyEntity:
                     entity_rect.top = rect.bottom
                     self.collisions['up'] = True
                 self.pos[1] = entity_rect.y
-
-        self.velocity[1] = min(self.level, self.velocity[1])
+        if self.grav and self.game.currentlevel < 33:
+            self.velocity[1] = min(difficulty(self.level), self.velocity[1])
+        else:
+            self.velocity[1] = min(5, self.velocity[1])
 
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
