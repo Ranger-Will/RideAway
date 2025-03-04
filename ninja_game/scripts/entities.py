@@ -50,13 +50,13 @@ class PhysicsEntity:
         surf.blit(self.game.assets['bike'], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
 
 class GravatyEntity:
-    def __init__(self, game, e_type, pos, size, max_health):
+    def __init__(self, game, e_type, pos, size, level):
         self.game = game
         self.type = e_type
         self.pos = list(pos)
         self.size = size
         self.velocity = [0, 0]
-        self.health = max_health
+        self.level = level
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
 
     def rect(self):
@@ -91,7 +91,7 @@ class GravatyEntity:
                     self.collisions['up'] = True
                 self.pos[1] = entity_rect.y
 
-        self.velocity[1] = min(5, self.velocity[1])
+        self.velocity[1] = min(self.level, self.velocity[1])
 
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
