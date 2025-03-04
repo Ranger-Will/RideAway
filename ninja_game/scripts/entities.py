@@ -98,7 +98,8 @@ class GravatyEntity:
                     self.collisions['up'] = True
                 self.pos[1] = entity_rect.y
         if self.grav and self.game.currentlevel < 33:
-            self.velocity[1] = min(difficulty(self.level), self.velocity[1])
+
+            self.velocity[1] = min(difficulty[self.level], self.velocity[1])
         else:
             self.velocity[1] = min(5, self.velocity[1])
 

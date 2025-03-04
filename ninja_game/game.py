@@ -8,8 +8,6 @@ from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 from scripts.ui import UI
 
-
-
 BASE_IMG_PATH = 'data/images/'
 
 def load_image(path):
@@ -47,7 +45,7 @@ class Game:
         }
 
         self.clouds = Clouds(self.assets['clouds'], count=10)
-        self.obsticals = []
+        self.obsticals = {}
 
         with open('data/score.txt', 'r') as f:
             self.highscore = f.read()
@@ -55,7 +53,7 @@ class Game:
 
         self.score = 0
 
-        self.player = PhysicsEntity(self, 'bike', (50, 50), (8, 15), 3)
+        self.player = PhysicsEntity(self, 'bike', (50, 50), (16, 16), 3)
 
         self.ui = UI("PressStart2P-vaV7.ttf")
 
@@ -65,24 +63,22 @@ class Game:
 
         self.hasupdatedenemies = 0
 
-        self.leveldistance = self.currentlevel * 100
+        self.leveldistance = self.currentlevel * 1000
 
         self.playerdistance = 0
 
         self.mousepos = (0, 0)
 
-        self.scroll = [0, 0]
-
     def run(self, running, gamemode):
         while running:
             if self.hasupdatedenemies == 0:
                 for enemy in range(int(self.leveldistance / 10)):
-                    self.obsticals.append(GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel))
+                    self.obsticals.update({enemy: GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel)})
                     self.hasupdatedenemies = 1   
 
             if (self.playerdistance // 10) == 0:
-                self.obsticals[0].pos[0] = random.randrange(16, self.screen.get_width() - 16)
-                self.obsticals[0].grav = 1
+              self.obsticals[0].pos[0] = random.randrange(16, self.screen.get_width() - 16)
+              self.obsticals[0].grav = 1
 
             if self.obsticals[0].pos[1] > 240:
                 self.obsticals.pop(0)
@@ -94,16 +90,19 @@ class Game:
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], self.movement[2] - self.movement[3]))
             self.player.render(self.display, offset=(0,0))
 
-            self.clouds.update()
-            self.clouds.render(self.display, offset=(0,self.playerdistance))
+            for enemies in self.obsticals:
+               self.obsticals[enemies].render(self.display)
 
-            self.screen.blit(self.ui.render(self.display, "Score:" + str(self.score)), (1, 1))
+            self.clouds.update()
+            self.clouds.render(self.display, offset=(0,-self.playerdistance))
+
+            self.display.blit(self.ui.render("Score:" + str(self.score)), (1, 1))
             if gamemode == 1:
-                self.screen.blit(self.ui.render(self.display, "Health:" + str(self.player.health)), (100, 1))
-            self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.highscore)), (200, 1))
+                self.display.blit(self.ui.render("Health:" + str(self.player.health)), (100, 1))
+            self.display.blit(self.ui.render("High Score:" + str(self.highscore)), (200, 1))
     
             if self.playerdistance >= self.leveldistance:
-                self.levelwin = self.ui.render("Level Beat", (100, 100))
+                self.display.blit(self.ui.render("Level Beat"), (100, 100))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -152,8 +151,8 @@ class Game:
             self.clouds.update()
             self.clouds.render(self.display, offset=(0,0))
 
-            self.ui.render("Play Classic", ((self.display.get_width()/2)-100, 100))
-            self.ui.render("Play Comprehension", ((self.display.get_width()/2)-100, 150))
+            self.display.blit(self.ui.render("Play Classic"), ((self.display.get_width()/2)-100, 100))
+            self.display.blit(self.ui.render("Play Comprehension"), ((self.display.get_width()/2)-100, 150))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -167,6 +166,5 @@ class Game:
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
-
 
 Game().menu(1)
