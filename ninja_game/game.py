@@ -1,6 +1,7 @@
 import sys
 import os
 import pygame
+import random
 
 from scripts.entities import PhysicsEntity, GravatyEntity
 from scripts.tilemap import Tilemap
@@ -61,20 +62,30 @@ class Game:
 
         self.currentlevel = 1
 
+        self.hasupdatedenemies = 0
+
         self.leveldistance = self.currentlevel * 100
 
         self.playerdistance = 0
 
         self.mousepos = (0, 0)
 
-        self.textbox = []
-
         self.scroll = [0, 0]
 
     def run(self, running, gamemode):
-        for enemy in self.currentlevel:
-            self.obsticals.append(GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel))
         while running:
+            if self.hasupdatedenemies == 0:
+                for enemy in self.leveldistance / 10:
+                    self.obsticals.append(GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel))
+                    self.hasupdatedenemies = 1   
+
+            if (self.playerdistance // 10) == 0:
+                self.obsticals(0).pos[0] = random.randrange(16, self.screen.get_width - 16)
+                self.obsticals(0).grav = 1
+
+            if self.obsticals(0).pos[1] > 240:
+                self.obsticals.pop(0)
+
             self.display.blit(self.assets['background'], (0, 0))
 
             self.tilemap.render(self.display, offset=(0,0))
@@ -89,6 +100,9 @@ class Game:
             if gamemode == 1:
                 self.screen.blit(self.ui.render(self.display, "Health:" + str(self.player.health), (100, 1)))
             self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.highscore), (200, 1)))
+    
+            if self.playerdistance >= self.leveldistance:
+                self.levelwin = self.ui.render("Level Beat", 100, 100)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -116,10 +130,14 @@ class Game:
                         self.movement[3] = False
                     if event.key == pygame.K_DOWN:
                         self.movement[2] = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.playClassic.get_rect().collide(self.mousepos):
+                        self.currentlevel += 1
+                        self.playerdistance = 0
+                        
+            
 
             self.playerdistance += 1
-            if self.playerdistance > self.leveldistance:
-                self.ui.render("Level Beat", 100, 100)
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
