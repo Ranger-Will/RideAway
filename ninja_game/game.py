@@ -9,6 +9,7 @@ from scripts.clouds import Clouds
 from scripts.ui import UI
 
 
+
 BASE_IMG_PATH = 'data/images/'
 
 def load_image(path):
@@ -48,9 +49,9 @@ class Game:
         self.clouds = Clouds(self.assets['clouds'], count=10)
         self.obsticals = []
 
-        self.f.open('data/score.txt', 'r')
-        self.highscore = int(self.f)
-        self.f.close
+        with open('data/score.txt', 'r') as f:
+            self.highscore = f.read()
+        f.close()
 
         self.score = 0
 
@@ -75,15 +76,15 @@ class Game:
     def run(self, running, gamemode):
         while running:
             if self.hasupdatedenemies == 0:
-                for enemy in self.leveldistance / 10:
+                for enemy in range(int(self.leveldistance / 10)):
                     self.obsticals.append(GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel))
                     self.hasupdatedenemies = 1   
 
             if (self.playerdistance // 10) == 0:
-                self.obsticals(0).pos[0] = random.randrange(16, self.screen.get_width - 16)
-                self.obsticals(0).grav = 1
+                self.obsticals[0].pos[0] = random.randrange(16, self.screen.get_width() - 16)
+                self.obsticals[0].grav = 1
 
-            if self.obsticals(0).pos[1] > 240:
+            if self.obsticals[0].pos[1] > 240:
                 self.obsticals.pop(0)
 
             self.display.blit(self.assets['background'], (0, 0))
@@ -96,20 +97,20 @@ class Game:
             self.clouds.update()
             self.clouds.render(self.display, offset=(0,self.playerdistance))
 
-            self.screen.blit(self.ui.render(self.display, "Score:" + str(self.score), (1, 1)))
+            self.screen.blit(self.ui.render(self.display, "Score:" + str(self.score)), (1, 1))
             if gamemode == 1:
-                self.screen.blit(self.ui.render(self.display, "Health:" + str(self.player.health), (100, 1)))
-            self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.highscore), (200, 1)))
+                self.screen.blit(self.ui.render(self.display, "Health:" + str(self.player.health)), (100, 1))
+            self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.highscore)), (200, 1))
     
             if self.playerdistance >= self.leveldistance:
-                self.levelwin = self.ui.render("Level Beat", 100, 100)
+                self.levelwin = self.ui.render("Level Beat", (100, 100))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.f.open("data/score.txt", 'w')
-                    if self.score > self.highscore:
-                        self.f.write(self.score)
-                    self.f.close
+                    with open("data/score.txt", 'w') as f:
+                        if self.score > int(self.highscore):
+                            f.write(str(self.score))
+                    f.close()
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
@@ -131,7 +132,7 @@ class Game:
                     if event.key == pygame.K_DOWN:
                         self.movement[2] = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.playClassic.get_rect().collide(self.mousepos):
+                    if 1:
                         self.currentlevel += 1
                         self.playerdistance = 0
                         
@@ -151,21 +152,21 @@ class Game:
             self.clouds.update()
             self.clouds.render(self.display, offset=(0,0))
 
-            self.playClassic = UI.render(self, self.display, "Play Classic", ((self.display.get_width/2)-100, 100))
-            self.playComprehension = UI.render(self, self.display, "Play Comprehension", ((self.display.get_width/2)-100, 150))
+            self.ui.render("Play Classic", ((self.display.get_width()/2)-100, 100))
+            self.ui.render("Play Comprehension", ((self.display.get_width()/2)-100, 150))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.playClassic.get_rect().collide(self.mousepos):
+                    if 2:
                         Game().run(1,1)
-                    if self.playComprehension.get_rect().collide(self.mousepos):
+                    if 1:
                         Game().run(1,2)
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
 
 
-Game().menu(1,0)
+Game().menu(1)
