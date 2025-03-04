@@ -144,29 +144,23 @@ class Game:
             pygame.display.update()
             self.clock.tick(60)
 
-    def menu(self, running):
-        while running:
+    def menu(self):
+        while True:
             self.mousepos = pygame.mouse.get_pos()
             self.display.blit(self.assets['background'], (0, 0))
 
-            self.clouds.update()
-            self.clouds.render(self.display, offset=(0,0))
-
             self.display.blit(self.ui.render("Play Classic"), ((self.display.get_width()/2)-100, 100))
             self.display.blit(self.ui.render("Play Comprehension"), ((self.display.get_width()/2)-100, 150))
-
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if 2:
-                        Game().run(1,1)
                     if 1:
                         Game().run(1,2)
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
 
-Game().menu(1)
+Game().menu()
