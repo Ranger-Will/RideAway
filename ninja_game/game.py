@@ -2,7 +2,7 @@ import sys
 import os
 import pygame
 
-from scripts.entities import PhysicsEntity
+from scripts.entities import PhysicsEntity, GravatyEntity
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 from scripts.ui import UI
@@ -72,6 +72,8 @@ class Game:
         self.scroll = [0, 0]
 
     def run(self, running, gamemode):
+        for enemy in self.currentlevel:
+            self.obsticals.append(GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel))
         while running:
             self.display.blit(self.assets['background'], (0, 0))
 
@@ -116,6 +118,8 @@ class Game:
                         self.movement[2] = False
 
             self.playerdistance += 1
+            if self.playerdistance > self.leveldistance:
+                self.ui.render("Level Beat", 100, 100)
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
@@ -139,7 +143,8 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.playClassic.get_rect().collide(self.mousepos):
                         Game().run(1,1)
-
+                    if self.playComprehension.get_rect().collide(self.mousepos):
+                        Game().run(1,2)
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
