@@ -109,6 +109,8 @@ class Game:
                     with open("data/score.txt", 'w') as f:
                         if self.score > int(self.highscore):
                             f.write(str(self.score))
+                        else:
+                            f.write(self.highscore)
                     f.close()
                     pygame.quit()
                     sys.exit()
@@ -134,10 +136,9 @@ class Game:
                     if 1:
                         self.currentlevel += 1
                         self.playerdistance = 0
-                        
-            
 
             self.playerdistance += 1
+            self.score = self.playerdistance
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
@@ -153,6 +154,7 @@ class Game:
 
             self.display.blit(self.ui.render("Play Classic"), ((self.display.get_width()/2)-100, 100))
             self.display.blit(self.ui.render("Play Comprehension"), ((self.display.get_width()/2)-100, 150))
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
