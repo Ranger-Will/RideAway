@@ -44,7 +44,12 @@ class Game:
             'clouds': load_images('clouds'),
         }
 
-        self.clouds = Clouds(self.assets['clouds'])
+        self.clouds = Clouds(self.assets['clouds'], count=10)
+        self.obsticals = []
+
+        self.f.open('data/score.txt', 'r')
+        self.highscore = int(self.f)
+        self.f.close
 
         self.score = 0
 
@@ -53,6 +58,12 @@ class Game:
         self.ui = UI("PressStart2P-vaV7.ttf")
 
         self.tilemap = Tilemap(self)
+
+        self.currentlevel = 1
+
+        self.leveldistance = self.currentlevel * 100
+
+        self.playerdistance = 0
 
         self.mousepos = (0, 0)
 
@@ -70,15 +81,19 @@ class Game:
             self.player.render(self.display, offset=(0,0))
 
             self.clouds.update()
-            self.clouds.render(self.display, offset=(0,0))
+            self.clouds.render(self.display, offset=(0,self.playerdistance))
 
             self.screen.blit(self.ui.render(self.display, "Score:" + str(self.score), (1, 1)))
             if gamemode == 1:
                 self.screen.blit(self.ui.render(self.display, "Health:" + str(self.player.health), (100, 1)))
-            self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.score), (200, 1)))
+            self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.highscore), (200, 1)))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.f.open("data/score.txt", 'w')
+                    if self.score > self.highscore:
+                        self.f.write(self.score)
+                    self.f.close
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
@@ -100,6 +115,8 @@ class Game:
                     if event.key == pygame.K_DOWN:
                         self.movement[2] = False
 
+            self.playerdistance += 1
+
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
@@ -109,7 +126,11 @@ class Game:
             self.mousepos = pygame.mouse.get_pos()
             self.display.blit(self.assets['background'], (0, 0))
 
+            self.clouds.update()
+            self.clouds.render(self.display, offset=(0,0))
+
             self.playClassic = UI.render(self, self.display, "Play Classic", ((self.display.get_width/2)-100, 100))
+            self.playComprehension = UI.render(self, self.display, "Play Comprehension", ((self.display.get_width/2)-100, 150))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
