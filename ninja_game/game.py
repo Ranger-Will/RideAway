@@ -54,22 +54,28 @@ class Game:
 
         self.tilemap = Tilemap(self)
 
+        self.mousepos = (0, 0)
+
+        self.textbox = []
+
         self.scroll = [0, 0]
 
-    def run(self):
-        while True:
+    def run(self, running, gamemode):
+        while running:
             self.display.blit(self.assets['background'], (0, 0))
-
-            self.clouds.update()
-            self.clouds.render(self.display, offset=(0,0))
 
             self.tilemap.render(self.display, offset=(0,0))
 
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], self.movement[2] - self.movement[3]))
             self.player.render(self.display, offset=(0,0))
-            self.ui.render(self.display, "Score:" + str(self.score), (1, 1))
-            self.ui.render(self.display, "Health:" + str(self.player.health), (100, 1))
-            self.ui.render(self.display, "High Score:" + str(self.score), (200, 1))
+
+            self.clouds.update()
+            self.clouds.render(self.display, offset=(0,0))
+
+            self.screen.blit(self.ui.render(self.display, "Score:" + str(self.score), (1, 1)))
+            if gamemode == 1:
+                self.screen.blit(self.ui.render(self.display, "Health:" + str(self.player.health), (100, 1)))
+            self.screen.blit(self.ui.render(self.display, "High Score:" + str(self.score), (200, 1)))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -98,5 +104,24 @@ class Game:
             pygame.display.update()
             self.clock.tick(60)
 
+    def menu(self, running):
+        while running:
+            self.mousepos = pygame.mouse.get_pos()
+            self.display.blit(self.assets['background'], (0, 0))
 
-Game().run()
+            self.playClassic = UI.render(self, self.display, "Play Classic", ((self.display.get_width/2)-100, 100))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.playClassic.get_rect().collide(self.mousepos):
+                        Game().run(1,1)
+
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+            pygame.display.update()
+            self.clock.tick(60)
+
+
+Game().menu(1,0)
