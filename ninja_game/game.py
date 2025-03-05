@@ -54,17 +54,12 @@ class Game:
         self.score = 0
 
         self.player = PhysicsEntity(self, 'bike', (50, 50), (16, 16), 3)
-
         self.ui = UI("PressStart2P-vaV7.ttf")
-
         self.tilemap = Tilemap(self)
 
         self.currentlevel = 1
-
         self.hasupdatedenemies = 0
-
         self.leveldistance = self.currentlevel * 1000
-
         self.playerdistance = 0
 
         self.mousepos = (0, 0)
