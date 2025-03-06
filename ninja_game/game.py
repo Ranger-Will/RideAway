@@ -178,7 +178,7 @@ class Game:
                     for rect in self.rects:
                         if rect.collidepoint(self.mousepos):
                             for answer in range(len(answers)):
-                                if answers[answer] == self.correctAnswer:
+                                if answers[self.rects.index(rect) - 1] == self.correctAnswer:
                                     self.isCorrect = True
                                     self.score += 1
 
