@@ -7,6 +7,7 @@ from scripts.entities import PhysicsEntity, GravatyEntity
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 from scripts.ui import UI
+from scripts.questions import Question, questions
 
 BASE_IMG_PATH = 'data/images/'
 
@@ -53,51 +54,49 @@ class Game:
 
         self.score = 0
 
-        self.player = PhysicsEntity(self, 'bike', (50, 50), (16, 16), 3)
+        self.question = Question()
+        self.answeringquestion = False
+
+        self.player = PhysicsEntity(self, 'bike', (160,120), (16, 16), 3)
         self.ui = UI("PressStart2P-vaV7.ttf")
         self.tilemap = Tilemap(self)
 
         self.currentlevel = 1
         self.hasupdatedenemies = 0
+        self.levelbeat = False
         self.leveldistance = self.currentlevel * 1000
         self.playerdistance = 0
 
         self.mousepos = (0, 0)
 
-    def run(self, running, gamemode):
-        while running:
-            if self.hasupdatedenemies == 0:
-                for enemy in range(int(self.leveldistance / 10)):
-                    self.obsticals.update({enemy: GravatyEntity(self, 'tree', (0, 0), (16, 16), self.currentlevel)})
-                    self.hasupdatedenemies = 1   
-
-            if (self.playerdistance // 10) == 0:
-              self.obsticals[0].pos[0] = random.randrange(16, self.screen.get_width() - 16)
-              self.obsticals[0].grav = 1
-
-            if self.obsticals[0].pos[1] > 240:
-                self.obsticals.pop(0)
-
+    def run(self, gamemode):
+        while True:
             self.display.blit(self.assets['background'], (0, 0))
 
             self.tilemap.render(self.display, offset=(0,0))
 
+            if (self.playerdistance % 120) == 0:
+                self.obsticals.update(
+                    {0: GravatyEntity(self, 'tree', (random.randrange(16, 224), 0), (16, 16), self.currentlevel)})
+
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], self.movement[2] - self.movement[3]))
             self.player.render(self.display, offset=(0,0))
 
-            for enemies in self.obsticals:
-               self.obsticals[enemies].render(self.display)
-
             self.clouds.update()
             self.clouds.render(self.display, offset=(0,-self.playerdistance))
+
+            for enemy in self.obsticals:
+                self.obsticals[enemy].update(self.tilemap)
+                self.obsticals[enemy].render(self.display)
 
             self.display.blit(self.ui.render("Score:" + str(self.score)), (1, 1))
             if gamemode == 1:
                 self.display.blit(self.ui.render("Health:" + str(self.player.health)), (100, 1))
             self.display.blit(self.ui.render("High Score:" + str(self.highscore)), (200, 1))
-    
+
             if self.playerdistance >= self.leveldistance:
                 self.display.blit(self.ui.render("Level Beat"), (100, 100))
+                self.levelbeat = True
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -128,11 +127,13 @@ class Game:
                     if event.key == pygame.K_DOWN:
                         self.movement[2] = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if 1:
+                    if self.levelbeat and not self.answeringquestion:
                         self.currentlevel += 1
                         self.playerdistance = 0
+                        self.levelbeat = False
 
-            self.playerdistance += 1
+            if not self.levelbeat:
+                self.playerdistance += 1
             self.score = self.playerdistance
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
@@ -144,6 +145,17 @@ class Game:
             self.mousepos = pygame.mouse.get_pos()
             self.display.blit(self.assets['background'], (0, 0))
 
+            rectClassic = self.ui.render("Play Classic").get_rect()
+            rectComprehension = self.ui.render("Play Comprehension").get_rect()
+            rectClassic[0] = ((self.display.get_width() / 2) - 100) * 2
+            rectClassic[1] = 100 * 2
+            rectComprehension[0] = ((self.display.get_width()/2)-100) * 2
+            rectComprehension[1] = 150 * 2
+            rectClassic[2] *= 2
+            rectClassic[3] *= 2
+            rectComprehension[2] *= 2
+            rectComprehension[3] *= 2
+
             self.display.blit(self.ui.render("Play Classic"), ((self.display.get_width()/2)-100, 100))
             self.display.blit(self.ui.render("Play Comprehension"), ((self.display.get_width()/2)-100, 150))
 
@@ -152,8 +164,12 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if 1:
-                        Game().run(1,2)
+                    if event.button == 1:
+                        if rectClassic.collidepoint(self.mousepos):
+                            Game().run(1)
+                        if rectComprehension.collidepoint(self.mousepos):
+                            Game().run(2)
+
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)
