@@ -1,6 +1,3 @@
-import random
-
-import pygame
 
 questions = {
     "What did was Jonas's full job title?": ["Receiver of Memories", "Receiver of Kittens", "The Giver",
