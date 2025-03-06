@@ -7,9 +7,19 @@ from scripts.entities import PhysicsEntity, GravatyEntity
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 from scripts.ui import UI
-from scripts.questions import Question, questions
+from scripts.questions import questions
 
 BASE_IMG_PATH = 'data/images/'
+
+questionlist = ["What did was Jonas's full job title?", 'What was the first color Jonas saw?',
+                'How many kids were in an average age group?', 'Where are all the records of private cerimonies?',
+                'How many Recivers have there been?', 'How did Jonas escape?',
+                'Where did his father inject the baby?', 'What did Gabriel mistake for a plane?',
+                'How long before the Ceremony was Jonas supposed to escape?',
+                "How far into Rosemary's training was she released", 'Children get their assingments at 12',
+                'Jonas was allowed to lie', "Lily's comfort object was a snake",
+                'Nobody can find the biclycle repair department',
+                "Did Jonas's assingment Ceremony go smoothly"]
 
 def load_image(path):
     img = pygame.image.load(BASE_IMG_PATH + path).convert()
@@ -54,12 +64,13 @@ class Game:
 
         self.score = 0
 
-        self.question = Question()
         self.answeringquestion = False
 
         self.player = PhysicsEntity(self, 'bike', (160,120), (16, 16), 3)
         self.ui = UI("PressStart2P-vaV7.ttf")
         self.tilemap = Tilemap(self)
+        self.showquestion = False
+        self.isCorrect = False
 
         self.currentlevel = 1
         self.hasupdatedenemies = 0
@@ -69,15 +80,28 @@ class Game:
 
         self.mousepos = (0, 0)
 
+        self.rects = []
+
+    def randomizeanswers(self, question):
+        copied = []
+        for anwers in questions[question]:
+            copied.append(anwers)
+        random.shuffle(copied)
+        return copied
+
     def run(self, gamemode):
         while True:
+            self.mousepos = pygame.mouse.get_pos()
             self.display.blit(self.assets['background'], (0, 0))
 
             self.tilemap.render(self.display, offset=(0,0))
 
-            if (self.playerdistance % 120) == 0:
-                self.obsticals.update(
-                    {0: GravatyEntity(self, 'tree', (random.randrange(16, 224), 0), (16, 16), self.currentlevel)})
+            if (self.playerdistance % 300) == 0:
+                self.showquestion = True
+                self.question = questionlist[random.randrange(0,14)]
+                self.correctAnswer = list(questions[self.question])[0]
+                answers = self.randomizeanswers(self.question)
+                self.switchquestion = 1
 
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], self.movement[2] - self.movement[3]))
             self.player.render(self.display, offset=(0,0))
@@ -85,6 +109,26 @@ class Game:
             self.clouds.update()
             self.clouds.render(self.display, offset=(0,-self.playerdistance))
 
+            if self.showquestion:
+                self.display.blit(self.ui.render(self.question), (30, 20))
+                ah = self.ui.render(self.question).get_rect()
+                ah[0] = 30
+                ah[1] = 20
+                ah[0] *= 2
+                ah[1] *= 2
+                ah[2] *= 2
+                ah[3] *= 2
+                self.rects.append(ah)
+                for answer in range(len(answers)):
+                    self.display.blit(self.ui.render(answers[answer]), (30, 30 + (answer * 20)))
+                    rect = self.ui.render(answers[answer]).get_rect()
+                    rect[0] = 30
+                    rect[1] = 30 + (answer * 20)
+                    rect[0] *= 2
+                    rect[1] *= 2
+                    rect[2] *= 2
+                    rect[3] *= 2
+                    self.rects.append(rect)
             for enemy in self.obsticals:
                 self.obsticals[enemy].update(self.tilemap)
                 self.obsticals[enemy].render(self.display)
@@ -131,10 +175,21 @@ class Game:
                         self.currentlevel += 1
                         self.playerdistance = 0
                         self.levelbeat = False
+                    for rect in self.rects:
+                        if rect.collidepoint(self.mousepos):
+                            for answer in range(len(answers)):
+                                if answers[answer] == self.correctAnswer:
+                                    self.isCorrect = True
+                                    self.score += 1
 
-            if not self.levelbeat:
+            if self.isCorrect:
+                self.display.blit(self.ui.render("Correct!"), (160, 40))
+            if self.switchquestion == 1:
+                self.isCorrect = False
+
+            if not self.levelbeat and not self.answeringquestion:
                 self.playerdistance += 1
-            self.score = self.playerdistance
+            self.switchquestion = 0
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
@@ -149,10 +204,10 @@ class Game:
             rectComprehension = self.ui.render("Play Comprehension").get_rect()
             rectClassic[0] = ((self.display.get_width() / 2) - 100) * 2
             rectClassic[1] = 100 * 2
-            rectComprehension[0] = ((self.display.get_width()/2)-100) * 2
-            rectComprehension[1] = 150 * 2
             rectClassic[2] *= 2
             rectClassic[3] *= 2
+            rectComprehension[0] = ((self.display.get_width()/2)-100) * 2
+            rectComprehension[1] = 150 * 2
             rectComprehension[2] *= 2
             rectComprehension[3] *= 2
 
