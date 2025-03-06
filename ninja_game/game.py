@@ -3,7 +3,7 @@ import os
 import pygame
 import random
 
-from scripts.entities import PhysicsEntity, GravatyEntity
+from scripts.entities import PhysicsEntity
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 from scripts.ui import UI
@@ -99,7 +99,7 @@ class Game:
             if (self.playerdistance % 300) == 0:
                 self.showquestion = True
                 self.question = questionlist[random.randrange(0,14)]
-                self.correctAnswer = list(questions[self.question])[0]
+                self.correctAnswer = questions[self.question][0]
                 answers = self.randomizeanswers(self.question)
                 self.switchquestion = 1
 
@@ -110,20 +110,13 @@ class Game:
             self.clouds.render(self.display, offset=(0,-self.playerdistance))
 
             if self.showquestion:
-                self.display.blit(self.ui.render(self.question), (30, 20))
-                ah = self.ui.render(self.question).get_rect()
-                ah[0] = 30
-                ah[1] = 20
-                ah[0] *= 2
-                ah[1] *= 2
-                ah[2] *= 2
-                ah[3] *= 2
-                self.rects.append(ah)
+                self.rects.clear()
+                self.display.blit(self.ui.render(self.question), (20, 20))
                 for answer in range(len(answers)):
-                    self.display.blit(self.ui.render(answers[answer]), (30, 30 + (answer * 20)))
+                    self.display.blit(self.ui.render(answers[answer]), (30, 40 + (answer * 20)))
                     rect = self.ui.render(answers[answer]).get_rect()
                     rect[0] = 30
-                    rect[1] = 30 + (answer * 20)
+                    rect[1] = 40 + (answer * 20)
                     rect[0] *= 2
                     rect[1] *= 2
                     rect[2] *= 2
@@ -178,12 +171,13 @@ class Game:
                     for rect in self.rects:
                         if rect.collidepoint(self.mousepos):
                             for answer in range(len(answers)):
-                                if answers[self.rects.index(rect) - 1] == self.correctAnswer:
+                                if answers[(self.rects.index(rect))%(len(self.rects))] == self.correctAnswer:
+                                    if not self.isCorrect:
+                                        self.score += 1
                                     self.isCorrect = True
-                                    self.score += 1
 
             if self.isCorrect:
-                self.display.blit(self.ui.render("Correct!"), (160, 40))
+                self.display.blit(self.ui.render("Correct!"), (160, 50))
             if self.switchquestion == 1:
                 self.isCorrect = False
 
